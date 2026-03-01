@@ -56,7 +56,6 @@ export default function StickyMiniCart() {
       return;
     }
     if (existingCartItem) {
-      // Update qty instead of adding duplicate
       updateQuantity(cartKey, existingCartItem.quantity + bannerQty);
       toast.success(`Updated ${pageProduct.name} quantity`, { duration: 2000 });
     } else {
@@ -65,74 +64,75 @@ export default function StickyMiniCart() {
     }
   };
 
-  // On product page with empty cart: always show product banner (no scroll gate)
-  // On product page with items: show cart summary after scroll
-  // On other pages with items: show cart summary after scroll
-  // On other pages without items: hide
-
+  // Not on product page + no cart items → hide
   if (!isOnProductPage && !hasCartItems) return null;
-  if (isOnProductPage && !hasCartItems) {
-    // Product page, cart empty → show product info banner (always visible)
+
+  // On product page → ALWAYS show product banner (variant + qty + add to cart)
+  if (isOnProductPage) {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-[80] bg-card shadow-elevated hairline animate-fade-in">
-        <div className="container mx-auto flex items-center justify-between gap-3 max-w-5xl px-4 py-2.5">
-          {/* Product thumbnail + name */}
-          <div className="flex items-center gap-3 min-w-0 flex-shrink">
-            <div className="w-10 h-10 rounded-sm overflow-hidden bg-muted flex-shrink-0">
-              <img src={pageProduct.image} alt="" className="w-full h-full object-cover" />
-            </div>
-            <p className="font-sans text-xs font-medium text-foreground line-clamp-1 hidden sm:block">{pageProduct.name}</p>
-          </div>
+        <div className="container mx-auto max-w-5xl px-4 py-2.5">
+          {/* Mobile: stack variant above controls row */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            {/* Row 1 on mobile / Left side on desktop: thumbnail + name + variant */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-sm overflow-hidden bg-muted flex-shrink-0">
+                <img src={pageProduct.image} alt="" className="w-full h-full object-cover" />
+              </div>
+              <p className="font-sans text-xs font-medium text-foreground line-clamp-1 hidden sm:block max-w-[120px]">{pageProduct.name}</p>
 
-          {/* Variant selector */}
-          {pageProduct.type === "variable" && pageProduct.variants && (
-            <div className="relative flex-shrink-0">
-              <select
-                value={bannerVariant || ""}
-                onChange={(e) => setBannerVariant(e.target.value)}
-                className="appearance-none bg-background border border-border rounded-sm text-xs font-sans px-3 py-2 pr-7 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+              {/* Variant selector — always visible when product has variants */}
+              {pageProduct.type === "variable" && pageProduct.variants && (
+                <div className="relative flex-shrink-0">
+                  <select
+                    value={bannerVariant || ""}
+                    onChange={(e) => setBannerVariant(e.target.value)}
+                    className="appearance-none bg-background border border-border rounded-sm text-xs font-sans px-3 py-2 pr-7 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    {pageProduct.variants.map((v) => (
+                      <option key={v.label} value={v.label}>
+                        {v.label} – ₹{v.price.toLocaleString("en-IN")}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                </div>
+              )}
+            </div>
+
+            {/* Row 2 on mobile / Right side on desktop: price + qty + add to cart */}
+            <div className="flex items-center gap-3 justify-end">
+              {/* Price */}
+              <span className="font-sans text-sm font-semibold text-primary flex-shrink-0">
+                ₹{bannerPrice.toLocaleString("en-IN")}
+              </span>
+
+              {/* Qty stepper */}
+              <div className="flex items-center border border-border rounded-sm flex-shrink-0">
+                <button onClick={() => setBannerQty(Math.max(1, bannerQty - 1))} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                  <Minus size={12} />
+                </button>
+                <span className="px-2.5 font-sans text-xs font-medium text-foreground min-w-[20px] text-center">{bannerQty}</span>
+                <button onClick={() => setBannerQty(bannerQty + 1)} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                  <Plus size={12} />
+                </button>
+              </div>
+
+              {/* Add to Cart */}
+              <button
+                onClick={handleBannerAddToCart}
+                className="bg-primary text-primary-foreground text-xs font-sans font-semibold tracking-[0.08em] uppercase px-5 py-2.5 rounded-sm hover:-translate-y-0.5 transition-transform flex-shrink-0"
               >
-                {pageProduct.variants.map((v) => (
-                  <option key={v.label} value={v.label}>
-                    {v.label} – ₹{v.price.toLocaleString("en-IN")}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                Add To Cart
+              </button>
             </div>
-          )}
-
-          {/* Price (for simple products) */}
-          {pageProduct.type === "simple" && (
-            <span className="font-sans text-xs font-semibold text-primary flex-shrink-0">
-              ₹{bannerPrice.toLocaleString("en-IN")}
-            </span>
-          )}
-
-          {/* Qty stepper */}
-          <div className="flex items-center border border-border rounded-sm flex-shrink-0">
-            <button onClick={() => setBannerQty(Math.max(1, bannerQty - 1))} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <Minus size={12} />
-            </button>
-            <span className="px-2.5 font-sans text-xs font-medium text-foreground min-w-[20px] text-center">{bannerQty}</span>
-            <button onClick={() => setBannerQty(bannerQty + 1)} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <Plus size={12} />
-            </button>
           </div>
-
-          {/* Add to Cart */}
-          <button
-            onClick={handleBannerAddToCart}
-            className="bg-primary text-primary-foreground text-xs font-sans font-semibold tracking-[0.08em] uppercase px-5 py-2.5 rounded-sm hover:-translate-y-0.5 transition-transform flex-shrink-0"
-          >
-            Add To Cart
-          </button>
         </div>
       </div>
     );
   }
 
-  // Cart has items → existing behavior (show after scroll)
+  // Not on product page, cart has items → show cart summary after scroll
   if (!visible) return null;
 
   const thumbnails = items.slice(0, 3);

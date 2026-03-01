@@ -8,6 +8,7 @@ import { WishlistProvider } from "@/contexts/WishlistContext";
 import { OrderProvider } from "@/contexts/OrderContext";
 import { ProductPageProvider } from "@/contexts/ProductPageContext";
 import CartDrawer from "@/components/CartDrawer";
+import AddonsModal from "@/components/AddonsModal";
 import StickyMiniCart from "@/components/StickyMiniCart";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
@@ -33,6 +34,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <CartDrawer />
+                <AddonsModal />
                 <StickyMiniCart />
                 <Routes>
                   <Route path="/" element={<Index />} />

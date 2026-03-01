@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCart, getCartKey } from "@/contexts/CartContext";
 import { useEffect, useRef } from "react";
-import CartAddons from "@/components/CartAddons";
 import CouponSection from "@/components/CouponSection";
 import CartDiscovery from "@/components/CartDiscovery";
 import BillBreakdown from "@/components/BillBreakdown";
@@ -64,8 +63,6 @@ export default function CartDrawer() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-          {/* Add-ons section (shown when items exist) */}
-          {items.length > 0 && <CartAddons />}
 
           {/* Cart Items */}
           {items.length === 0 ? (

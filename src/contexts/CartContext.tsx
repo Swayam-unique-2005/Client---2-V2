@@ -28,6 +28,8 @@ interface CartContextType {
   appliedCoupon: AppliedCoupon | null;
   applyCoupon: (coupon: AppliedCoupon) => void;
   removeCoupon: () => void;
+  isAddonsModalOpen: boolean;
+  setAddonsModalOpen: (open: boolean) => void;
 }
 
 function getCartKey(item: CartItem) {
@@ -46,6 +48,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   });
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [isAddonsModalOpen, setAddonsModalOpen] = useState(false);
   const [lastAddedProductId, setLastAddedProductId] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(() => {
     try {
@@ -84,7 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prev, { product, quantity: 1, selectedVariant: variant, unitPrice }];
     });
     setLastAddedProductId(product.id);
-    setDrawerOpen(true);
+    setAddonsModalOpen(true);
   }, []);
 
   const removeFromCart = useCallback((cartKey: string) => {
@@ -121,7 +124,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider value={{
       items, addToCart, removeFromCart, updateQuantity, clearCart,
       totalItems, totalPrice, isDrawerOpen, setDrawerOpen,
-      lastAddedProductId, appliedCoupon, applyCoupon, removeCoupon
+      lastAddedProductId, appliedCoupon, applyCoupon, removeCoupon,
+      isAddonsModalOpen, setAddonsModalOpen
     }}>
       {children}
     </CartContext.Provider>
